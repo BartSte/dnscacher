@@ -2,8 +2,7 @@ import asyncio
 import logging
 import pickle
 import socket
-from collections.abc import Coroutine, Generator, Iterable
-from enum import Enum
+from collections.abc import Coroutine
 from os import makedirs
 from os.path import dirname
 from typing import override
@@ -11,7 +10,6 @@ from typing import override
 import aiodns
 
 from dnscache.domains import Domains
-from dnscache.enums import Output
 from dnscache.exceptions import InvalidCacheError
 
 
@@ -165,26 +163,6 @@ class Mappings(dict[str, list[str]]):
             except aiodns.error.DNSError as e:
                 logging.debug("Error resolving %s: %s", domain, e.args[1])
                 return domain, []
-
-    def print(self, outputs: Iterable[Output]) -> str:
-        """Print the mappings in a human-readable format.
-
-        Args:
-            output: The output to print.
-
-        Returns:
-            str: the output string.
-
-        """
-        output_to_mapping: dict[Enum, str] = {
-            Output.DOMAINS: "\n".join(self.domains),
-            Output.IPS: "\n".join(self.ips),
-            Output.MAPPINGS: str(self),
-        }
-        result: Generator[str] = (
-            output_to_mapping[output] for output in outputs
-        )
-        return "\n".join(result)
 
     @override
     def __str__(self) -> str:

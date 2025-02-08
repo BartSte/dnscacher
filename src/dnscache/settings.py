@@ -46,6 +46,7 @@ class Settings:
 
     def __post_init__(self):
         """Set the default values for the settings."""
+        # TODO: needs strict typing..
         if is_root():
             self._set_root_defaults()
         else:
@@ -58,6 +59,9 @@ class Settings:
             self.source = join(paths.root, "debug.txt")
         elif not self.source and self.command == "resolve":
             raise SettingsError("No source provided for resolve command.")
+
+        if isinstance(self.output, str):
+            self.output = (Output(self.output),)
 
         logging.info("Settings: %s", self)
 

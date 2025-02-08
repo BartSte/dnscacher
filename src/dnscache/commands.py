@@ -1,21 +1,17 @@
 import logging
 import sys
-from argparse import ArgumentError
-from types import TracebackType
 from typing import Callable
 
-from dnscache import logger
+from dnscache import exceptions, logger, printer
 from dnscache.domains import Domains
 from dnscache.enums import Command
-from dnscache.exceptions import InvalidCacheError, IpSetError, SettingsError
-from dnscache.ipset import IpSet
 from dnscache.mappings import Mappings
 from dnscache.settings import Settings
 
 
 def main():
     """Entry point for the application."""
-    sys.excepthook = excepthook
+    sys.excepthook = exceptions.hook
     logger.init()
 
     settings: Settings = Settings.from_cli()
@@ -25,37 +21,6 @@ def main():
     command: Command = Command(settings.command)
     function: Callable[[Settings], str] = _COMMANDS[command]
     print(function(settings))
-
-
-def excepthook(
-    type_: type[BaseException],
-    value: BaseException,
-    traceback: TracebackType | None,
-):
-    """Global exception hook.
-
-    Logs errors based on type and then exits.
-
-    Args:
-        type_ (type[BaseException]): The exception class.
-        value (BaseException): The exception instance.
-        traceback: Traceback object.
-
-    """
-    expected: tuple[type[BaseException], ...] = (
-        KeyboardInterrupt,
-        InvalidCacheError,
-        ArgumentError,
-        IpSetError,
-        SettingsError,
-    )
-    if isinstance(value, expected):
-        logging.error(value)
-    else:
-        logging.critical(
-            "Unexpected error: ", exc_info=(type_, value, traceback)
-        )
-    sys.exit(1)
 
 
 def resolve(settings: Settings) -> str:
@@ -82,7 +47,7 @@ def resolve(settings: Settings) -> str:
     mappings.update_by_resolving(resolve, settings.jobs, settings.timeout)
     mappings.save()
 
-    return mappings.print(settings.output)
+    return printer.print(mappings, settings.output)
 
 
 def retrieve(settings: Settings) -> str:
@@ -98,34 +63,10 @@ def retrieve(settings: Settings) -> str:
     mappings: Mappings = Mappings(path=settings.mappings)
     mappings.load()
 
-    return mappings.print(settings.output)
-
-
-def ipset(settings: Settings) -> str:
-    """Create the ipset and add the IP addresses.
-
-    Args:
-        settings: The settings object.
-
-    Returns:
-        the IP addresses in a format suitable for the `ipset restore` command.
-
-    """
-    mappings: Mappings = Mappings(path=settings.mappings)
-    mappings.load()
-
-    if not settings.ipset:
-        raise SettingsError("No ipset name provided")
-
-    ipset: IpSet = IpSet(settings.ipset)
-    ipset.make()
-    ipset.add(mappings.ips)
-
-    return mappings.print(settings.output)
+    return printer.print(mappings, settings.output)
 
 
 _COMMANDS: dict[Command, Callable[[Settings], str]] = {
     Command.RESOLVE: resolve,
     Command.RETRIEVE: retrieve,
-    Command.IPSET: ipset,
 }

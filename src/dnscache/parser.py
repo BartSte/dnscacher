@@ -78,11 +78,8 @@ def make_parser() -> ArgumentParser:
         "-o",
         "--output",
         nargs="?",
-        type=Output.multiple,
-        help=(
-            f"Write the obtained data to stdout. Choices: "
-            f"{', '.join(x.value for x in Output)} (default: no output)."
-        ),
+        choices=[x.value for x in Output],
+        help="Write the obtained data to stdout",
     )
     parser.add_argument(
         "-j",
@@ -151,14 +148,6 @@ def make_parser() -> ArgumentParser:
         nargs="?",
         type=_str_or_debug,
         help="URL or file path that contains the domains.",
-    )
-
-    commands.add_parser(
-        name=Command.IPSET.value,
-        description=(
-            "Create an ipset of the IP addresses in the cache. The ipset is "
-            "created with the name provided by the `--ipset` option."
-        ),
     )
 
     return parser

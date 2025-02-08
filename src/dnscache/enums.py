@@ -6,13 +6,13 @@ class Command(Enum):
 
     RESOLVE = "resolve"
     RETRIEVE = "retrieve"
-    IPSET = "ipset"
 
 
 class Output(Enum):
-    IPS = "ips"
-    DOMAINS = "domains"
-    MAPPINGS = "mappings"
+    IP = "ips"
+    DOMAIN = "domains"
+    MAPPING = "mappings"
+    IPSET = "ipset"
 
     @classmethod
     def multiple(cls, value: str) -> tuple[Enum, ...]:

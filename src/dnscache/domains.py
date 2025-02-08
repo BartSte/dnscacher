@@ -117,4 +117,4 @@ class Domains(set[str]):
     @override
     def __str__(self) -> str:
         """Return the informal string representation of the Domains set."""
-        return f"{type(self).__name__}({super().__str__()})"
+        return "\n".join(self)
