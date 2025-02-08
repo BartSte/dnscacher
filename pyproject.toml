@@ -1,0 +1,82 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dnscache"
+authors = [ {name = "BartSte"} ]
+description = "Cache domain to IP mappings"
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["dns", "cache", "ip", "domain"]
+license = {text = "MIT License"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "asyncio",
+    "aiodns",
+    "requests",
+]
+version = "0.0.0"
+
+[project.optional-dependencies]
+dev = ["ipdb", "ipython", "pytest", "build", "twine", "pre-commit"]
+
+[project.scripts]
+dnscache = "dnscache:__main__.main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["dnscache"]
+
+[tool.pyright]
+include = ["src/dnscache", "tests"]
+exclude = [
+    "**/__pycache__",
+    ".git",
+    ".pytest_cache",
+    "extras",
+]
+ignore = []
+defineConstant = {}
+stubPath = "stubs"
+venvPath = ".venv"
+
+reportImplicitStringConcatenation = false
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportUnusedCallResult = false
+
+pythonVersion = "3.13"
+pythonPlatform = "Linux"
+
+executionEnvironments = []
+
+[tool.ruff]
+line-length = 80
+
+select = [
+    "F",  # pyflakes
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "I",  # isort
+    "N",  # PEP8 naming
+]
+
+[tool.autopep8]
+max_line_length = 80
+aggressive = 3
+experimental = true
+
+[tool.pytest.ini_options]
+addopts = "-s -rA --log-level INFO"
+pythonpath = [
+  "src"
+]
+testpaths = [
+    "tests"
+]
+
+[tool.ipdb]
+context = 9

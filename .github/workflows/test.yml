@@ -1,0 +1,27 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        run: |
+          sudo apt-get install -y python3 python3-venv python3-pip
+          python3 -m venv .venv
+          source .venv/bin/activate
+          python3 -m pip install ".[test]"
+          python3 -m pytest --log-level=DEBUG
