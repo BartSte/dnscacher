@@ -1,10 +1,10 @@
 repos:
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: "v0.8.6"
+    rev: "v0.9.5"
     hooks:
       - id: ruff
 
-  - repo: https://github.com/pre-commit/mirrors-autoflake
+  - repo: https://github.com/PyCQA/autoflake
     rev: "v2.3.1"
     hooks:
       - id: autoflake
