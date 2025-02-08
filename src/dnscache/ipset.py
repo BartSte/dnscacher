@@ -1,6 +1,8 @@
 import logging
 import subprocess
 
+from dnscache.exceptions import IpSetError
+
 
 class IpSet:
     """A helper class for managing ipset operations.
@@ -103,7 +105,3 @@ class IpSet:
         with open("/etc/iptables/iptables.rules", "w") as f:
             subprocess.run(["iptables-save"], stdout=f)
         logging.info("Saved iptables rules to /etc/iptables/iptables.rules")
-
-
-class IpSetError(Exception):
-    """Raised when an error occurs during ipset operations."""

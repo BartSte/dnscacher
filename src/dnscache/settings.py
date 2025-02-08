@@ -1,17 +1,17 @@
 import logging
 import os
+from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
-from enum import Enum
 from ntpath import expandvars
 from os import makedirs
 from os.path import dirname, join
+from typing import Any, Self
 
 from dnscache import paths
+from dnscache.enums import Output
+from dnscache.exceptions import SettingsError
 from dnscache.helpers import is_root
-
-
-class SettingsError(Exception):
-    """Raised when a setting is missing or invalid."""
+from dnscache.parser import make_parser
 
 
 @dataclass
@@ -32,16 +32,17 @@ class Settings:
 
     """
 
-    source: str = ""
+    command: str = ""
     debug: bool = False
     ipset: str = ""
     jobs: int = 10000
     log: str = ""
     loglevel: str = "INFO"
     mappings: str = ""
+    output: tuple[Output, ...] = ()
     part: int = 100
-    timeout: int = 5
-    output: tuple[Enum, ...] = ()
+    source: str = ""
+    timeout: int = 10
 
     def __post_init__(self):
         """Set the default values for the settings."""
@@ -55,9 +56,10 @@ class Settings:
 
         if self.debug:
             self.source = join(paths.root, "debug.txt")
+        elif not self.source and self.command == "resolve":
+            raise SettingsError("No source provided for resolve command.")
 
-        if not self.source:
-            raise SettingsError("No source specified")
+        logging.info("Settings: %s", self)
 
     def _set_root_defaults(self):
         """Set the default values for root."""
@@ -92,3 +94,21 @@ class Settings:
         for d in dirs:
             logging.info("Trying to create directory %s", d)
             makedirs(d, exist_ok=True)
+
+    @classmethod
+    def from_cli(cls) -> Self:
+        """Create a new Settings object from the command line arguments.
+
+        Returns:
+            The Settings object.
+
+        """
+        parser: ArgumentParser = make_parser()
+        args: Namespace = parser.parse_args()
+        kwargs: dict[str, Any] = {
+            key: value for key, value in vars(args).items() if value
+        }
+        try:
+            return cls(**kwargs)
+        except TypeError as e:
+            raise SettingsError(f"Invalid settings: {e}") from e

@@ -1,19 +1,20 @@
 import sys
+from argparse import ArgumentParser
 from unittest import TestCase
 
-from dnscache.parser import Parser
+from dnscache.parser import make_parser
 from dnscache.settings import Settings
 
 
 class TestParser(TestCase):
     """Test cases for the Parser class."""
 
-    parser: Parser
+    parser: ArgumentParser
     _argv: list[str]
 
     def setUp(self):
         """Set up test environment for Parser tests."""
-        self.parser = Parser()
+        self.parser = make_parser()
         self._argv = sys.argv.copy()
 
     def tearDown(self):
@@ -33,8 +34,10 @@ class TestParser(TestCase):
         sys.argv = ["update-blocklist"]
         sys.argv.append("--debug")
         sys.argv.extend([f"--{k}={v}" for k, v in argv.items()])
+        sys.argv.append("resolve")
 
         args = self.parser.parse_args()
-        settings = Settings(**vars(args))
+        kwargs = {k: v for k, v in vars(args).items() if v}
+        settings = Settings(**kwargs)
         for key, value in argv.items():
             self.assertEqual(getattr(settings, key), value)

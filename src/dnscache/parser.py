@@ -1,10 +1,13 @@
 import sys
-from argparse import ArgumentError, ArgumentParser, RawDescriptionHelpFormatter
-from enum import Enum
+from argparse import (
+    ArgumentError,
+    ArgumentParser,
+    RawDescriptionHelpFormatter,
+)
 from os.path import join
 
 from dnscache import paths
-from dnscache.settings import Settings
+from dnscache.enums import Command, Output
 
 _DESCRIPTION = """
 Resolve the IP addresses of the `source` domains and store the domain to IP
@@ -19,137 +22,135 @@ default, no output is written to stdout. You can change this by using the
 `--output` option.
 """
 
+_DESCRIPTION_RETRIEVE = """
+Only retrieve the mappings from cache and write them to stdout. The output
+format is controlled by the `--output` option. By the default, no output is
+written to stdout.
+"""
+
 # https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/porn-only/hosts
 
 
-class Output(Enum):
-    IPS = "ips"
-    DOMAINS = "domains"
-    MAPPINGS = "mappings"
+def _check_part(value: int | str) -> int:
+    """Validate the part argument is between 0 and 100.
 
-    @classmethod
-    def multiple(cls, value: str) -> tuple[Enum, ...]:
-        """Return a list of Output values from a comma-separated string.
+    Args:
+        value (int | str): The input value for part.
 
-        Args:
-            value (str): Comma-separated string of Output values.
+    Returns:
+        int: The validated integer value.
 
-        Returns:
-            list[Self]: List of Output values.
+    Raises:
+        ArgumentError: If the value is not between 0 and 100.
 
-        """
-        values: list[str] = value.replace(",", " ").split()
-        return tuple(cls(v) for v in values)
+    """
+    value = int(value)
+    if not 0 <= value <= 100:
+        raise ArgumentError(None, "part must be between 0 and 100")
+    return value
 
 
-class Parser(ArgumentParser):
-    """Custom argument parser for update-blocklist."""
+def _str_or_debug(value: str) -> str:
+    """Return the `debug.txt` path if the `--debug` option is set on the
+    command line.
 
-    def __init__(self):
-        """Initialize the parser with program arguments."""
-        super().__init__(
-            prog="dnscache",
-            description=_DESCRIPTION,
-            formatter_class=RawDescriptionHelpFormatter,
-        )
-        self.add_argument(
-            "source",
-            nargs="?",
-            default=Settings.source,
-            type=self._str_or_debug,
-            help="URL or file path that contains the domains.",
-        )
-        self.add_argument(
-            "--output",
-            nargs="?",
-            type=Output.multiple,
-            help=(
-                f"Write the obtained data to stdout. Choices: "
-                f"{', '.join(x.value for x in Output)} (default: no output)."
-            ),
-        )
-        self.add_argument(
-            "-j",
-            "--jobs",
-            type=int,
-            help="Number of jobs to run in parallel.",
-            default=Settings.jobs,
-        )
-        self.add_argument(
-            "-l",
-            "--loglevel",
-            choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-            help="Set the log level.",
-            default=Settings.loglevel,
-        )
-        self.add_argument(
-            "-m",
-            "--mappings",
-            help="Path to the file with domain→IP mappings.",
-            default=Settings.mappings,
-        )
-        self.add_argument(
-            "-i",
-            "--ipset",
-            help="Name of the ipset to add the IPs to.",
-            default=Settings.ipset,
-        )
-        self.add_argument(
-            "-p",
-            "--part",
-            type=self.check_part,
-            default=Settings.part,
-            help=(
-                "Percentage between 0 and 100 of the stored mappings to "
-                "re-resolve."
-            ),
-        )
-        self.add_argument(
-            "--log", help="Path to the log file.", default=Settings.log
-        )
-        self.add_argument(
-            "--debug",
-            action="store_true",
-            help="Enable debug mode.",
-            default=Settings.debug,
-        )
-        self.add_argument(
-            "--timeout",
-            type=int,
-            help="Timeout for resolving a domain.",
-            default=Settings.timeout,
-        )
+    Args:
+        value: The input value.
 
-    def check_part(self, value: int | str) -> int:
-        """Validate the part argument is between 0 and 100.
+    Returns:
+        str: The input value or the `debug.txt` path.
 
-        Args:
-            value (int | str): The input value for part.
+    """
+    value = join(paths.root, value) if "--debug" in sys.argv else value
+    if not value:
+        raise ArgumentError(None, "source must be specified")
+    return value
 
-        Returns:
-            int: The validated integer value.
 
-        Raises:
-            ArgumentError: If the value is not between 0 and 100.
+def make_parser() -> ArgumentParser:
+    """Initialize the parser with program arguments."""
+    parser = ArgumentParser(
+        prog="dnscache",
+        description=_DESCRIPTION,
+        formatter_class=RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        nargs="?",
+        type=Output.multiple,
+        help=(
+            f"Write the obtained data to stdout. Choices: "
+            f"{', '.join(x.value for x in Output)} (default: no output)."
+        ),
+    )
+    parser.add_argument(
+        "-j",
+        "--jobs",
+        type=int,
+        help="Number of jobs to run in parallel.",
+    )
+    parser.add_argument(
+        "-l",
+        "--loglevel",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="Set the log level.",
+    )
+    parser.add_argument(
+        "-m",
+        "--mappings",
+        help="Path to the file with domain→IP mappings.",
+    )
+    parser.add_argument(
+        "-i",
+        "--ipset",
+        help="Name of the ipset to add the IPs to.",
+    )
+    parser.add_argument(
+        "-p",
+        "--part",
+        type=_check_part,
+        help=(
+            "Percentage between 0 and 100 of the stored mappings to "
+            "re-resolve."
+        ),
+    )
+    parser.add_argument("--log", help="Path to the log file.")
+    parser.add_argument(
+        "-d",
+        "--debug",
+        action="store_true",
+        help="Enable debug mode.",
+    )
+    parser.add_argument(
+        "-t",
+        "--timeout",
+        type=int,
+        help="Timeout for resolving a domain.",
+    )
 
-        """
-        value = int(value)
-        if not 0 <= value <= 100:
-            raise ArgumentError(None, "part must be between 0 and 100")
-        return value
+    commands = parser.add_subparsers(dest="command", required=True)
 
-    def _str_or_debug(self, value: str) -> str:
-        """Return the `debug.txt` path if the `--debug` option is set on the
-        command line.
+    commands.add_parser(
+        name=Command.RETRIEVE.value,
+        description=_DESCRIPTION_RETRIEVE,
+        formatter_class=RawDescriptionHelpFormatter,
+        help="Only retrieve the current domain-to-ip mappings stored in cache.",
+    )
+    resolve_parser: ArgumentParser = commands.add_parser(
+        name=Command.RESOLVE.value,
+        description=_DESCRIPTION,
+        formatter_class=RawDescriptionHelpFormatter,
+        help=(
+            "Resolve the IP addresses of the domains and store the resulting "
+            "domain-to-ip mappings in cache."
+        ),
+    )
+    resolve_parser.add_argument(
+        "source",
+        nargs="?",
+        type=_str_or_debug,
+        help="URL or file path that contains the domains.",
+    )
 
-        Args:
-            value: The input value.
-
-        Returns:
-            str: The input value or the `debug.txt` path.
-
-        """
-        value = join(paths.root, value) if "--debug" in sys.argv else value
-        if not value:
-            raise ArgumentError(None, "source must be specified")
-        return value
+    return parser

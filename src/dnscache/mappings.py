@@ -2,20 +2,22 @@ import asyncio
 import logging
 import pickle
 import socket
-from collections.abc import Coroutine
+from collections.abc import Coroutine, Generator, Iterable
 from enum import Enum
 from os import makedirs
 from os.path import dirname
-from typing import Generator, Iterable, override
+from typing import override
 
 import aiodns
 
 from dnscache.domains import Domains
-from dnscache.parser import Output
+from dnscache.enums import Output
+from dnscache.exceptions import InvalidCacheError
 
 
 class Mappings(dict[str, list[str]]):
-    """A dictionary mapping domains to a list of IPs with persistence and resolution.
+    """A dictionary mapping domains to a list of IPs with persistence and
+    resolution.
 
     Attributes:
         path (str): Path to the pickled mappings file.
@@ -103,8 +105,10 @@ class Mappings(dict[str, list[str]]):
 
         Args:
             domains (Domains): Set of domains to resolve.
-            jobs (int, optional): Number of concurrent workers. Defaults to 10000.
-            timeout (int, optional): Timeout in seconds for each resolution. Defaults to 5.
+            jobs (int, optional): Number of concurrent workers. Defaults to
+            10000.
+            timeout (int, optional): Timeout in seconds for each resolution.
+            Defaults to 5.
 
         """
         logging.info("Asyncio event loop starting with %s workers", jobs)
@@ -145,7 +149,7 @@ class Mappings(dict[str, list[str]]):
             timeout (int, optional): Timeout for the resolution. Defaults to 5.
 
         Returns:
-            tuple[str, list[str]]: A tuple containing the domain and a list of resolved IPs.
+            A tuple containing the domain and a list of resolved IPs.
 
         """
         async with self._sem:
@@ -162,7 +166,7 @@ class Mappings(dict[str, list[str]]):
                 logging.debug("Error resolving %s: %s", domain, e.args[1])
                 return domain, []
 
-    def print(self, outputs: Iterable[Enum]) -> str:
+    def print(self, outputs: Iterable[Output]) -> str:
         """Print the mappings in a human-readable format.
 
         Args:
@@ -195,7 +199,3 @@ class Mappings(dict[str, list[str]]):
         return "\n".join(
             f"{domain} {' '.join(ips)}" for domain, ips in self.items()
         )
-
-
-class InvalidCacheError(Exception):
-    """Raised when the mappings cache file is invalid."""
