@@ -6,6 +6,7 @@ class Command(Enum):
 
     RESOLVE = "resolve"
     RETRIEVE = "retrieve"
+    IPSET = "ipset"
 
 
 class Output(Enum):
