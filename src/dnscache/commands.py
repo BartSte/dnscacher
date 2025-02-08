@@ -118,8 +118,8 @@ def ipset(settings: Settings) -> str:
         raise SettingsError("No ipset name provided")
 
     ipset: IpSet = IpSet(settings.ipset)
-    ipset.add(mappings.ips)
     ipset.make()
+    ipset.add(mappings.ips)
 
     return mappings.print(settings.output)
 
