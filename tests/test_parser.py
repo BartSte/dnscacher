@@ -21,9 +21,9 @@ class TestParser(TestCase):
         sys.argv = self._argv
 
     def test_parse(self):
-        """Test that the parser correctly parses given command-line arguments."""
+        """Test that the parser correctly parses given command-line
+        arguments."""
         argv: dict[str, str | int] = {
-            "url": "https://example.com",
             "jobs": 10,
             "loglevel": "INFO",
             "mappings": "/tmp/mappings.txt",
@@ -31,6 +31,7 @@ class TestParser(TestCase):
             "part": 50,
         }
         sys.argv = ["update-blocklist"]
+        sys.argv.append("--debug")
         sys.argv.extend([f"--{k}={v}" for k, v in argv.items()])
 
         args = self.parser.parse_args()

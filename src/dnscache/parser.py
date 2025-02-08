@@ -1,25 +1,22 @@
+import sys
 from argparse import ArgumentError, ArgumentParser, RawDescriptionHelpFormatter
 from enum import Enum
+from os.path import join
 
+from dnscache import paths
 from dnscache.settings import Settings
 
 _DESCRIPTION = """
-Download the URL blocklist into the BLOCKLIST file. Resolve the IPs of the
+Resolve the IP addresses of the `source` domains and store the domain to IP
+mappings in your cache.
 
-domains in the blocklist and add them to an ipset named IPSET_NAME. Then add an
-iptables rule to drop packets to those IPs.
+When running the program again, only the domains that are in the `source` but
+not in the cache are resolved. Also, domains that are no longer in the `source`
+are removed from the cache.
 
-
-To avoid rate limiting, the blocklist is resolved in parallel with a number of
-jobs (-j). The blocklist may be processed in parts (-p), meaning only that
-percentage of *existing mappings* will be re-resolved each run.
-
-By storing domain→IP mappings in a file (-m), we can skip re-resolving domains
-unnecessarily:
-
-- New domains (in blocklist but not in mappings) are always resolved.
-- Domains no longer in the blocklist are removed from ipset.
-- A random N% of *existing* domains are re-resolved on each run.
+You can update the cache (in random parts) by using the `--part` option. By the
+default, no output is written to stdout. You can change this by using the
+`--output` option.
 """
 
 # https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/porn-only/hosts
@@ -45,8 +42,6 @@ class Output(Enum):
         return tuple(cls(v) for v in values)
 
 
-
-
 class Parser(ArgumentParser):
     """Custom argument parser for update-blocklist."""
 
@@ -58,8 +53,11 @@ class Parser(ArgumentParser):
             formatter_class=RawDescriptionHelpFormatter,
         )
         self.add_argument(
-            "url",
-            help="URL to download the domains from.",
+            "source",
+            nargs="?",
+            default=Settings.source,
+            type=self._str_or_debug,
+            help="URL or file path that contains the domains.",
         )
         self.add_argument(
             "--output",
@@ -138,4 +136,20 @@ class Parser(ArgumentParser):
         value = int(value)
         if not 0 <= value <= 100:
             raise ArgumentError(None, "part must be between 0 and 100")
+        return value
+
+    def _str_or_debug(self, value: str) -> str:
+        """Return the `debug.txt` path if the `--debug` option is set on the
+        command line.
+
+        Args:
+            value: The input value.
+
+        Returns:
+            str: The input value or the `debug.txt` path.
+
+        """
+        value = join(paths.root, value) if "--debug" in sys.argv else value
+        if not value:
+            raise ArgumentError(None, "source must be specified")
         return value

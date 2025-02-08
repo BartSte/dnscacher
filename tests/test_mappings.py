@@ -16,7 +16,7 @@ class TestMappings(TestCase):
 
     def setUp(self) -> None:
         """Set up test environment for Mappings tests."""
-        self.settings = Settings(mappings="/tmp/mappings")
+        self.settings = Settings(mappings="/tmp/mappings", debug=True)
         self.mappings = Mappings(path=self.settings.mappings)
         self.mappings.update(
             {
@@ -46,7 +46,8 @@ class TestMappings(TestCase):
         self.assertEqual(result, {})
 
     def test_invalid(self):
-        """Test that loading an invalid mappings file raises InvalidCacheError."""
+        """Test that loading an invalid mappings file raises
+        InvalidCacheError."""
         with open(self.settings.mappings, "wb") as f:
             pickle.dump({"invalid", "object"}, f)
         result = Mappings(self.settings.mappings)

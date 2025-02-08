@@ -4,9 +4,14 @@ from dataclasses import dataclass
 from enum import Enum
 from ntpath import expandvars
 from os import makedirs
-from os.path import dirname
+from os.path import dirname, join
 
+from dnscache import paths
 from dnscache.helpers import is_root
+
+
+class SettingsError(Exception):
+    """Raised when a setting is missing or invalid."""
 
 
 @dataclass
@@ -14,6 +19,8 @@ class Settings:
     """Holds settings for the update-blocklist script.
 
     Attributes:
+        source (str): URL or file path for the domains.
+
         debug (bool): Enable debug mode.
         ipset (str): Name of the ipset.
         jobs (int): Number of parallel jobs.
@@ -22,12 +29,10 @@ class Settings:
         mappings (str): File path for domain→IP mappings.
         part (int): Percentage (0-100) of stored mappings to re-resolve.
         timeout (int): Timeout in seconds for resolving a domain.
-        url (str): URL to download the blocklist from.
 
     """
 
-    url: str
-
+    source: str = ""
     debug: bool = False
     ipset: str = ""
     jobs: int = 10000
@@ -47,6 +52,12 @@ class Settings:
 
         self.mappings = expandvars(self.mappings)
         self.log = expandvars(self.log)
+
+        if self.debug:
+            self.source = join(paths.root, "debug.txt")
+
+        if not self.source:
+            raise SettingsError("No source specified")
 
     def _set_root_defaults(self):
         """Set the default values for root."""

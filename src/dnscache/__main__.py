@@ -31,10 +31,7 @@ def main():
     mappings.load()
 
     domains: Domains = Domains()
-    if settings.debug:
-        domains.update({"example.com", "example.org"})
-    else:
-        domains.update_from_url(settings.url)
+    domains.update_from_source(settings.source)
 
     diff: Domains = domains - mappings.domains
     retained: Domains = mappings.domains & domains
@@ -44,7 +41,7 @@ def main():
     mappings.update_by_resolving(resolve, settings.jobs, settings.timeout)
     mappings.save()
 
-    print(mappings.print(settings.output))
+    return mappings.print(settings.output)
 
     # The whole ipset and iptables part does not really belong in this module,
     # right?

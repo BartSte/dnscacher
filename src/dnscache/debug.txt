@@ -1,0 +1,4 @@
+# A debug file for loading domains
+
+www.example.com
+1.2.3.4 www.example.org

@@ -1,3 +1,4 @@
+from tempfile import NamedTemporaryFile
 from unittest import TestCase
 
 import requests
@@ -11,20 +12,22 @@ class TestDomains(TestCase):
 
     def test_valid(self):
         """Test that update_from_url returns a set with domains."""
-        domains = Domains().update_from_url(Settings.url)
+        settings = Settings(debug=True)
+        domains = Domains().update_from_source(settings.source)
         self.assertIsInstance(domains, set)
-        self.assertTrue(len(domains) > 10)
+        self.assertTrue(len(domains) == 2)
 
     def test_invalid(self):
         """Test that update_from_url raises an error for an invalid URL."""
         with self.assertRaises(requests.exceptions.ConnectionError):
-            Domains().update_from_url("https://notexisting_123abc.com")
+            Domains().update_from_source("https://notexisting_123abc.com")
 
     def test_not_domains_file(self):
         """Test that update_from_url returns an empty set when no valid domains
         are found."""
-        x = Domains().update_from_url("https://google.com")
-        self.assertEqual(x, set())
+        with NamedTemporaryFile() as file:
+            x = Domains().update_from_source(file.name)
+            self.assertEqual(x, set())
 
     def test_operators(self):
         """Test set operators on Domains."""
@@ -61,7 +64,8 @@ class TestDomains(TestCase):
         self.assertEqual(len(subset), 2, f"len: {len(subset)}")
 
     def test_large(self):
-        """Test that a 50% subset of 100,000 items returns exactly 50,000 items."""
+        """Test that a 50% subset of 100,000 items returns exactly 50,000
+        items."""
         domains = Domains({f"{x}" for x in range(100000)})
         subset = domains.make_random_subset(50)
         self.assertTrue(subset.issubset(domains))

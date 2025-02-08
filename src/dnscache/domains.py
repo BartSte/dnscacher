@@ -1,5 +1,7 @@
 import random
-from typing import Self, override
+import re
+from os.path import isfile
+from typing import AbstractSet, Self, override
 
 import requests
 
@@ -7,8 +9,9 @@ import requests
 class Domains(set[str]):
     """A set subclass for handling domains with additional operations."""
 
-    def update_from_url(self, url: str) -> Self:
-        """Download the blocklist from the URL and update the set with domains.
+    def update_from_source(self, source: str) -> Self:
+        """Update the set of domains that is downloaded from a URL or retrieved
+        from a file.
 
         Args:
             url (str): URL to download the blocklist from.
@@ -17,14 +20,64 @@ class Domains(set[str]):
             Domains: The updated set of domains.
 
         """
+        if isfile(source):
+            self.update_from_file(source)
+        else:
+            self.update_from_url(source)
+        return self
+
+    def update_from_file(self, path: str) -> Self:
+        """Update the set of domains that is retrieved from a file.
+
+        Args:
+            path (str): Path to the file containing the domains.
+
+        Returns:
+            Domains: The updated set of domains.
+
+        """
+        with open(path) as file:
+            self.update_from_str(file.read())
+        return self
+
+    def update_from_str(self, text: str):
+        """Parse text into a set of domains.
+
+        For each line, the function extracts domains using a regular expression.
+        This approach supports typical `/etc/hosts` file entries as well as
+        URLs.
+
+        Args:
+            text (str): Text to parse.
+
+        Returns:
+            set[str]: Set of domains.
+        """
+        domain_pattern: re.Pattern[str] = re.compile(
+            r"(?i)\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{2,})\b"
+        )
+
+        for line in text.splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            matches = domain_pattern.findall(line)
+            for match in matches:
+                if isinstance(match, str):
+                    self.add(match.lower())
+
+    def update_from_url(self, url: str) -> Self:
+        """Update the set of domains that is downloaded from a URL.
+
+        Args:
+            url: URL to download the blocklist from.
+
+        Returns:
+            the updated set of domains.
+        """
         response: requests.Response = requests.get(url)
         response.raise_for_status()
-
-        self.update(
-            line.split()[1]
-            for line in response.text.splitlines()
-            if line.startswith("0.0.0.0")
-        )
+        self.update_from_str(response.text)
         return self
 
     def make_random_subset(self, part: int) -> Self:
@@ -42,17 +95,17 @@ class Domains(set[str]):
         return cls(random.sample(list(self), n))
 
     @override
-    def __sub__(self, other: Self) -> Self:
+    def __sub__(self, other: AbstractSet[str | None]) -> Self:
         """Return the difference between two Domains sets."""
         return type(self)(super().__sub__(other))
 
     @override
-    def __and__(self, other: Self) -> Self:
+    def __and__(self, other: AbstractSet[object]) -> Self:
         """Return the intersection of two Domains sets."""
         return type(self)(super().__and__(other))
 
     @override
-    def __or__(self, other: Self) -> Self:
+    def __or__(self, other: AbstractSet[str]) -> Self:
         """Return the union of two Domains sets."""
         return type(self)(super().__or__(other))
 

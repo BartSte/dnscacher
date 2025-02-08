@@ -13,6 +13,8 @@ class TestSettings(TestCase):
         from tempfile import TemporaryDirectory
 
         with TemporaryDirectory() as tmpdirname:
-            settings = Settings(mappings=f"{tmpdirname}/subdir/mappings_file")
+            settings = Settings(
+                debug=True, mappings=f"{tmpdirname}/subdir/mappings_file"
+            )
             settings.makedirs()
             self.assertTrue(os.path.isdir(dirname(settings.mappings)))
