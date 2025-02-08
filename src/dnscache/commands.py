@@ -8,6 +8,7 @@ from dnscache import logger
 from dnscache.domains import Domains
 from dnscache.enums import Command
 from dnscache.exceptions import InvalidCacheError, IpSetError, SettingsError
+from dnscache.ipset import IpSet
 from dnscache.mappings import Mappings
 from dnscache.settings import Settings
 
@@ -100,7 +101,31 @@ def retrieve(settings: Settings) -> str:
     return mappings.print(settings.output)
 
 
+def ipset(settings: Settings) -> str:
+    """Create the ipset and add the IP addresses.
+
+    Args:
+        settings: The settings object.
+
+    Returns:
+        the IP addresses in a format suitable for the `ipset restore` command.
+
+    """
+    mappings: Mappings = Mappings(path=settings.mappings)
+    mappings.load()
+
+    if not settings.ipset:
+        raise SettingsError("No ipset name provided")
+
+    ipset: IpSet = IpSet(settings.ipset)
+    ipset.add(mappings.ips)
+    ipset.make()
+
+    return mappings.print(settings.output)
+
+
 _COMMANDS: dict[Command, Callable[[Settings], str]] = {
     Command.RESOLVE: resolve,
     Command.RETRIEVE: retrieve,
+    Command.IPSET: ipset,
 }

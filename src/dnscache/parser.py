@@ -153,4 +153,12 @@ def make_parser() -> ArgumentParser:
         help="URL or file path that contains the domains.",
     )
 
+    commands.add_parser(
+        name=Command.IPSET.value,
+        description=(
+            "Create an ipset of the IP addresses in the cache. The ipset is "
+            "created with the name provided by the `--ipset` option."
+        ),
+    )
+
     return parser
