@@ -4,6 +4,7 @@ from typing import Callable
 
 from dnscache import exceptions, formatter, logger
 from dnscache.domains import Domains
+from dnscache.ipset import IpSet
 from dnscache.mappings import Mappings
 from dnscache.settings import Settings
 
@@ -50,8 +51,16 @@ class Commands:
         """
         callback: Callable[[], None] = getattr(self, self._settings.command)
         callback()
+
+        ipset: IpSet = IpSet(self._settings.ipset)
+        ipset.update(self._mappings.ips)
         return formatter.product(
-            [self._mappings, self._mappings.ips, self._mappings.domains],
+            [
+                self._mappings,
+                self._mappings.ips,
+                self._mappings.domains,
+                ipset,
+            ],
             self._settings.output,
         )
 

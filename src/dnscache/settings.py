@@ -32,7 +32,7 @@ class Settings:
 
     command: str = ""
     debug: bool = False
-    ipset: str = ""
+    ipset: str = "dnscache"
     jobs: int = 10000
     log: str = ""
     loglevel: str = "INFO"
