@@ -28,6 +28,8 @@ class Mappings(dict[str, list[str]]):
     _sem: asyncio.Semaphore
     _resolver: aiodns.DNSResolver
 
+    EXCLUDED_IPS: set[str] = {"0.0.0.0", "127.0.0.1"}
+
     def __init__(self, path: str):
         """Initialize the Mappings object.
 
@@ -134,6 +136,7 @@ class Mappings(dict[str, list[str]]):
         logging.info("Resolving %s domains async", len(tasks))
         for i, future in enumerate(asyncio.as_completed(tasks)):
             domain, ips = await future
+            ips = self._filter_ips(ips)
             self[domain] = ips
             if i % 1000 == 0:
                 logging.info("Resolved %s domains", i)
@@ -165,6 +168,18 @@ class Mappings(dict[str, list[str]]):
             except aiodns.error.DNSError as e:
                 logging.debug("Error resolving %s: %s", domain, e.args[1])
                 return domain, []
+
+    def _filter_ips(self, ips: list[str]) -> list[str]:
+        """Filter out IPs that are in Mappings.EXCLUDED_IPS.
+
+        Args:
+            ips (list[str]): List of IP addresses.
+
+        Returns:
+            list[str]: List of filtered IP addresses.
+
+        """
+        return [ip for ip in ips if ip not in self.EXCLUDED_IPS]
 
     @override
     def __format__(self, format_spec: str) -> str:

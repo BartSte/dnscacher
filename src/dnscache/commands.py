@@ -81,6 +81,7 @@ class Commands:
         that are not in the Settings.source."""
         self._add()
         self._remove()
+        self._mappings.save()
 
     def _add(self):
         """Same as add, but does not save the mappings"""
@@ -100,6 +101,7 @@ class Commands:
         logging.info("Number of removed domains: %d", len(remove))
         for domain in remove:
             self._mappings.pop(domain)
+            logging.debug("Removing domain: %s", domain)
 
     def add(self):
         """Resolve and add the domains from the Settings.source that are not yet
