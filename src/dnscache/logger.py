@@ -17,7 +17,6 @@ def init():
     )
     stream.setFormatter(formatter)
     logger.addHandler(stream)
-    logging.info("Initialized logger")
 
 
 def set(logfile: str, level: str):
@@ -37,4 +36,4 @@ def set(logfile: str, level: str):
 
     logger.setLevel(level)
     logger.addHandler(file)
-    logger.info("Updated logger with %s and %s", logfile, level)
+    logging.info("--- New run ---")

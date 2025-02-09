@@ -59,7 +59,7 @@ class Settings:
 
         self.mappings = expandvars(self.mappings)
         self.log = expandvars(self.log)
-        logging.info("Settings: %s", self)
+        logging.debug("Settings: %s", self)
 
     def _set_root_defaults(self):
         """Set the default values for root."""
@@ -92,7 +92,7 @@ class Settings:
         """
         dirs: list[str] = [dirname(self.mappings)]
         for d in dirs:
-            logging.info("Trying to create directory %s", d)
+            logging.debug("Trying to create directory %s", d)
             makedirs(d, exist_ok=True)
 
     @classmethod
