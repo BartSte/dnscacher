@@ -34,9 +34,7 @@ class TestParser(TestCase):
             "--part=50",
             "--log=/tmp/dnscache.log",
             "--timeout=5",
-            "--output",
-            "ips",
-            "mappings",
+            "--output=ips,mappings",
             "--debug",
         ]
         sys.argv = ["update-blocklist"]

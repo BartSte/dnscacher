@@ -68,6 +68,7 @@ class TupleAction(Action):
     def __call__(self, parser, namespace, values, option_string=None):
         """Convert the list of values into a tuple and set it as an
         attribute."""
+        values = values.split(",") if isinstance(values, str) else values
         setattr(namespace, self.dest, tuple(values))  # pyright: ignore
 
 
@@ -100,10 +101,11 @@ def make_parser() -> Parser:
     parser.add_argument(
         "-o",
         "--output",
-        nargs="*",
         action=TupleAction,
-        choices=[x.value for x in Output],
-        help="Write the obtained data to stdout",
+        help=(
+            "Write the obtained data to stdout. Separate multiple outputs by a"
+            f"comma. Choices: {', '.join(x.value for x in Output)}"
+        ),
     )
     parser.add_argument(
         "-j",
