@@ -4,11 +4,9 @@ from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 from ntpath import expandvars
 from os import makedirs
-from os.path import dirname, join
+from os.path import dirname
 from typing import Any, Self
 
-from dnscache import paths
-from dnscache.enums import Output
 from dnscache.exceptions import SettingsError
 from dnscache.helpers import is_root
 from dnscache.parser import make_parser
@@ -39,14 +37,21 @@ class Settings:
     log: str = ""
     loglevel: str = "INFO"
     mappings: str = ""
-    output: tuple[Output, ...] = ()
+    output: tuple[str, ...] = ()
     part: int = 100
     source: str = ""
     timeout: int = 10
 
+    _log_root_unix: str = "/var/log/dnscache.log"
+    _log_unix: str = "$HOME/.local/state/dnscache.log"
+    _log_win: str = "$TEMP\\dnscache\\dnscache.log"
+
+    _mappings_root_unix: str = "/var/cache/dnscache/mappings.pickle"
+    _mappings_unix: str = "$HOME/.cache/dnscache/mappings.pickle"
+    _mappings_win: str = "$TEMP\\dnscache\\mappings.pickle"
+
     def __post_init__(self):
         """Set the default values for the settings."""
-        # TODO: needs strict typing..
         if is_root():
             self._set_root_defaults()
         else:
@@ -54,15 +59,6 @@ class Settings:
 
         self.mappings = expandvars(self.mappings)
         self.log = expandvars(self.log)
-
-        if self.debug:
-            self.source = join(paths.root, "debug.txt")
-        elif not self.source and self.command == "resolve":
-            raise SettingsError("No source provided for resolve command.")
-
-        if isinstance(self.output, str):
-            self.output = (Output(self.output),)
-
         logging.info("Settings: %s", self)
 
     def _set_root_defaults(self):
@@ -71,11 +67,11 @@ class Settings:
             return
 
         if os.name == "nt":
-            self.mappings = "$TEMP\\dnscache\\mappings.pickle"
-            self.log = "$TEMP\\dnscache\\dnscache.log"
+            self.mappings = self._mappings_win
+            self.log = self._log_win
         else:
-            self.mappings = "/var/cache/dnscache/mappings.pickle"
-            self.log = "/var/log/dnscache.log"
+            self.mappings = self._mappings_root_unix
+            self.log = self._log_root_unix
 
     def _set_user_defaults(self):
         """Set the default values for non-root users."""
@@ -83,11 +79,11 @@ class Settings:
             return
 
         if os.name == "nt":
-            self.mappings = "$TEMP\\dnscache\\mappings.pickle"
-            self.log = "$TEMP\\dnscache\\dnscache.log"
+            self.mappings = self._mappings_win
+            self.log = self._log_win
         else:
-            self.mappings = "$HOME/.cache/dnscache/mappings.pickle"
-            self.log = "$HOME/.local/state/dnscache.log"
+            self.mappings = self._mappings_unix
+            self.log = self._log_unix
 
     def makedirs(self):
         """Create the directories needed for the settings.
@@ -116,3 +112,17 @@ class Settings:
             return cls(**kwargs)
         except TypeError as e:
             raise SettingsError(f"Invalid settings: {e}") from e
+
+    def as_dict(self) -> dict[str, int | str | bool | tuple[str, ...]]:
+        """Return the public attributes of the Settings object that are not
+        functions or properties.
+
+        Returns:
+            list[str]: The public attributes.
+
+        """
+        return {
+            key: value
+            for key, value in self.__annotations__.items()
+            if not key.startswith("_")
+        }

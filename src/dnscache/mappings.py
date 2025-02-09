@@ -10,7 +10,9 @@ from typing import override
 import aiodns
 
 from dnscache.domains import Domains
+from dnscache.enums import Output
 from dnscache.exceptions import InvalidCacheError
+from dnscache.ips import Ips
 
 
 class Mappings(dict[str, list[str]]):
@@ -47,14 +49,14 @@ class Mappings(dict[str, list[str]]):
         return Domains(self.keys())
 
     @property
-    def ips(self) -> set[str]:
+    def ips(self) -> Ips:
         """Return a set of all IPs from the mappings.
 
         Returns:
             set[str]: A set of IP addresses.
 
         """
-        return set(ip for ips in self.values() for ip in ips)
+        return Ips(ip for ips in self.values() for ip in ips)
 
     def load(self):
         """Load domain→IP mappings from a pickle file.
@@ -163,6 +165,20 @@ class Mappings(dict[str, list[str]]):
             except aiodns.error.DNSError as e:
                 logging.debug("Error resolving %s: %s", domain, e.args[1])
                 return domain, []
+
+    @override
+    def __format__(self, format_spec: str) -> str:
+        """Return a formatted string representation of the Mappings object.
+
+        Args:
+            format_spec: The format specifier based on value of the `Output`
+            enum.
+
+        Returns:
+            str: A formatted string representation of the Mappings object.
+
+        """
+        return str(self) if Output(format_spec) == Output.MAPPING else ""
 
     @override
     def __str__(self) -> str:

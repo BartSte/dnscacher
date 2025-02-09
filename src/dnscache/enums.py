@@ -15,7 +15,7 @@ class Output(Enum):
     IPSET = "ipset"
 
     @classmethod
-    def multiple(cls, value: str) -> tuple[Enum, ...]:
+    def multiple(cls, values: str | list[str]) -> tuple["Output", ...]:
         """Return a list of Output values from a comma-separated string.
 
         Args:
@@ -25,5 +25,6 @@ class Output(Enum):
             list[Self]: List of Output values.
 
         """
-        values: list[str] = value.replace(",", " ").split()
+        if isinstance(values, str):
+            values = [values]
         return tuple(cls(v) for v in values)

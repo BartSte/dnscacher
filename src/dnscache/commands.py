@@ -2,7 +2,7 @@ import logging
 import sys
 from typing import Callable
 
-from dnscache import exceptions, logger, printer
+from dnscache import exceptions, formatter, logger
 from dnscache.domains import Domains
 from dnscache.enums import Command
 from dnscache.mappings import Mappings
@@ -47,7 +47,9 @@ def resolve(settings: Settings) -> str:
     mappings.update_by_resolving(resolve, settings.jobs, settings.timeout)
     mappings.save()
 
-    return printer.print(mappings, settings.output)
+    return formatter.product(
+        [mappings, mappings.ips, mappings.domains], settings.output
+    )
 
 
 def retrieve(settings: Settings) -> str:
@@ -63,7 +65,9 @@ def retrieve(settings: Settings) -> str:
     mappings: Mappings = Mappings(path=settings.mappings)
     mappings.load()
 
-    return printer.print(mappings, settings.output)
+    return formatter.product(
+        [mappings, mappings.ips, mappings.domains], settings.output
+    )
 
 
 _COMMANDS: dict[Command, Callable[[Settings], str]] = {

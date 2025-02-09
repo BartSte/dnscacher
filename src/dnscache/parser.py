@@ -1,10 +1,12 @@
-import sys
 from argparse import (
+    Action,
     ArgumentError,
     ArgumentParser,
+    Namespace,
     RawDescriptionHelpFormatter,
 )
 from os.path import join
+from typing import override
 
 from dnscache import paths
 from dnscache.enums import Command, Output
@@ -31,6 +33,44 @@ written to stdout.
 # https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/porn-only/hosts
 
 
+class Parser(ArgumentParser):
+    @override
+    def parse_args(self, *args, **kwargs) -> Namespace:
+        return self._set_source(super().parse_args(*args, **kwargs))
+
+    def _set_source(self, args: Namespace) -> Namespace:
+        """Set the source to `debug.txt` if the `--debug` flag is set.
+
+        Args:
+            args: The parsed arguments.
+
+        Raises:
+            ArgumentError: if the `--debug` flag is not set and no source is
+            provided.
+
+        Returns:
+            The parsed arguments.
+
+        """
+        if not hasattr(args, "source"):
+            return args
+
+        if args.debug:
+            args.source = join(paths.root, "debug.txt")
+        elif not args.source:
+            raise ArgumentError(None, "source is required")
+
+        return args
+
+
+class TupleAction(Action):
+    @override
+    def __call__(self, parser, namespace, values, option_string=None):
+        """Convert the list of values into a tuple and set it as an
+        attribute."""
+        setattr(namespace, self.dest, tuple(values))  # pyright: ignore
+
+
 def _check_part(value: int | str) -> int:
     """Validate the part argument is between 0 and 100.
 
@@ -50,26 +90,9 @@ def _check_part(value: int | str) -> int:
     return value
 
 
-def _str_or_debug(value: str) -> str:
-    """Return the `debug.txt` path if the `--debug` option is set on the
-    command line.
-
-    Args:
-        value: The input value.
-
-    Returns:
-        str: The input value or the `debug.txt` path.
-
-    """
-    value = join(paths.root, value) if "--debug" in sys.argv else value
-    if not value:
-        raise ArgumentError(None, "source must be specified")
-    return value
-
-
-def make_parser() -> ArgumentParser:
+def make_parser() -> Parser:
     """Initialize the parser with program arguments."""
-    parser = ArgumentParser(
+    parser = Parser(
         prog="dnscache",
         description=_DESCRIPTION,
         formatter_class=RawDescriptionHelpFormatter,
@@ -77,7 +100,8 @@ def make_parser() -> ArgumentParser:
     parser.add_argument(
         "-o",
         "--output",
-        nargs="?",
+        nargs="*",
+        action=TupleAction,
         choices=[x.value for x in Output],
         help="Write the obtained data to stdout",
     )
@@ -134,7 +158,7 @@ def make_parser() -> ArgumentParser:
         formatter_class=RawDescriptionHelpFormatter,
         help="Only retrieve the current domain-to-ip mappings stored in cache.",
     )
-    resolve_parser: ArgumentParser = commands.add_parser(
+    resolve_parser: Parser = commands.add_parser(
         name=Command.RESOLVE.value,
         description=_DESCRIPTION,
         formatter_class=RawDescriptionHelpFormatter,
@@ -145,9 +169,11 @@ def make_parser() -> ArgumentParser:
     )
     resolve_parser.add_argument(
         "source",
-        nargs="?",
-        type=_str_or_debug,
-        help="URL or file path that contains the domains.",
+        nargs="?",  # nargs=1 is enforced in the Parser.parse_args method
+        help=(
+            "URL or file path that contains the domains. Will be ignored if "
+            "the `--debug` option is set."
+        ),
     )
 
     return parser

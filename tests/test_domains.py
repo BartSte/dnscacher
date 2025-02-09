@@ -3,8 +3,8 @@ from unittest import TestCase
 
 import requests
 
+from dnscache import paths
 from dnscache.domains import Domains
-from dnscache.settings import Settings
 
 
 class TestDomains(TestCase):
@@ -12,8 +12,7 @@ class TestDomains(TestCase):
 
     def test_valid(self):
         """Test that update_from_url returns a set with domains."""
-        settings = Settings(debug=True)
-        domains = Domains().update_from_source(settings.source)
+        domains = Domains().update_from_source(paths.debug)
         self.assertIsInstance(domains, set)
         self.assertTrue(len(domains) == 2)
 

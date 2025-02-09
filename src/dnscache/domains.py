@@ -1,9 +1,12 @@
 import random
 import re
+from collections.abc import Set
 from os.path import isfile
-from typing import AbstractSet, Self, override
+from typing import Self, override
 
 import requests
+
+from dnscache.enums import Output
 
 
 class Domains(set[str]):
@@ -95,17 +98,17 @@ class Domains(set[str]):
         return cls(random.sample(list(self), n))
 
     @override
-    def __sub__(self, other: AbstractSet[str | None]) -> Self:
+    def __sub__(self, other: Set[str | None]) -> Self:
         """Return the difference between two Domains sets."""
         return type(self)(super().__sub__(other))
 
     @override
-    def __and__(self, other: AbstractSet[object]) -> Self:
+    def __and__(self, other: Set[object]) -> Self:
         """Return the intersection of two Domains sets."""
         return type(self)(super().__and__(other))
 
     @override
-    def __or__(self, other: AbstractSet[str]) -> Self:
+    def __or__(self, other: Set[str]) -> Self:
         """Return the union of two Domains sets."""
         return type(self)(super().__or__(other))
 
@@ -118,3 +121,16 @@ class Domains(set[str]):
     def __str__(self) -> str:
         """Return the informal string representation of the Domains set."""
         return "\n".join(self)
+
+    @override
+    def __format__(self, format_spec: str) -> str:
+        """Return a formatted string representation of the Domains set.
+
+        Args:
+            format_spec (str): Format specification.
+
+        Returns:
+            str: Formatted string representation.
+
+        """
+        return str(self) if Output(format_spec) == Output.DOMAIN else ""
