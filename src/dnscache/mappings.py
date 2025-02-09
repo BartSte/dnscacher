@@ -111,9 +111,9 @@ class Mappings(dict[str, list[str]]):
             Defaults to 5.
 
         """
-        logging.info("Asyncio event loop starting with %s workers", jobs)
+        logging.debug("Asyncio event loop starting with %s workers", jobs)
         asyncio.run(self._resolve_multiple(domains, jobs, timeout))
-        logging.info("Asyncio event loop finished")
+        logging.debug("Asyncio event loop finished")
 
     async def _resolve_multiple(
         self, domains: Domains, jobs: int = 10000, timeout: int = 5

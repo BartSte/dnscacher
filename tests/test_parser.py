@@ -39,7 +39,7 @@ class TestParser(TestCase):
         ]
         sys.argv = ["update-blocklist"]
         sys.argv.extend(options)
-        sys.argv.append("resolve")
+        sys.argv.append("update")
 
         args = self.parser.parse_args()
         kwargs = {k: v for k, v in vars(args).items() if v}
@@ -56,7 +56,7 @@ class TestParser(TestCase):
         # Assert the settings object has the expected values.
         expected = Settings(
             jobs=10,
-            command="resolve",
+            command="update",
             loglevel="INFO",
             mappings="/tmp/mappings.txt",
             ipset="blocked-ips",

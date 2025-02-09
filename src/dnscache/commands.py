@@ -4,7 +4,6 @@ from typing import Callable
 
 from dnscache import exceptions, formatter, logger
 from dnscache.domains import Domains
-from dnscache.enums import Command
 from dnscache.mappings import Mappings
 from dnscache.settings import Settings
 
@@ -18,59 +17,105 @@ def main():
     logger.set(settings.log, settings.loglevel)
     settings.makedirs()
 
-    command: Command = Command(settings.command)
-    function: Callable[[Settings], str] = _COMMANDS[command]
-    print(function(settings))
+    print(Commands.run(settings))
 
 
-def resolve(settings: Settings) -> str:
-    """Map the domains from `Settings.source` to IP addresses.
+class Commands:
+    _domains: Domains
+    _mappings: Mappings
+    _settings: Settings
 
-    The mappings are stored in cache and may be returned based on the
-    `Settings.output` attribute.
+    def __init__(self, settings: Settings):
+        self._domains = Domains()
+        self._mappings = Mappings(path=settings.mappings)
+        self._settings = settings
 
-    Args:
-        settings: The settings object.
+    @classmethod
+    def run(cls, settings: Settings) -> str:
+        """Run the command specified in the settings.
 
-    """
-    mappings: Mappings = Mappings(path=settings.mappings)
-    mappings.load()
+        Args:
+            settings: The settings object.
 
-    domains: Domains = Domains()
-    domains.update_from_source(settings.source)
+        Returns:
+            The output of the command.
+        """
+        return cls(settings)()
 
-    diff: Domains = domains - mappings.domains
-    retained: Domains = mappings.domains & domains
-    resolve: Domains = retained.make_random_subset(settings.part) | diff
-    logging.info("%s domains to resolve", len(resolve))
+    def __call__(self) -> str:
+        """Run the command specified in the settings.
 
-    mappings.update_by_resolving(resolve, settings.jobs, settings.timeout)
-    mappings.save()
+        Returns:
+            The output of the command.
+        """
+        callback: Callable[[], None] = getattr(self, self._settings.command)
+        callback()
+        return formatter.product(
+            [self._mappings, self._mappings.ips, self._mappings.domains],
+            self._settings.output,
+        )
 
-    return formatter.product(
-        [mappings, mappings.ips, mappings.domains], settings.output
-    )
+    def get(self):
+        """Retrieve the mappings from cache.
+
+        Args:
+            self.settings: The settings object.
+
+        Returns:
+            the mappings from cache as a string.
+
+        """
+        self._mappings.load()
+
+    def update(self):
+        """Update the mappings by resolving new domains and removing domains
+        that are not in the Settings.source."""
+        self._add()
+        self._remove()
+
+    def _add(self):
+        """Same as add, but does not save the mappings"""
+        self._mappings.load()
+
+        self._domains.update_from_source(self._settings.source)
+        new: Domains = self._domains - self._mappings.domains
+        logging.info("Number of new domains: %d", len(new))
+
+        self._mappings.update_by_resolving(
+            new, self._settings.jobs, self._settings.timeout
+        )
+
+    def _remove(self):
+        """Remove domains that are not in the source."""
+        remove: Domains = self._mappings.domains - self._domains
+        logging.info("Number of removed domains: %d", len(remove))
+        for domain in remove:
+            self._mappings.pop(domain)
+
+    def add(self):
+        """Resolve and add the domains from the Settings.source that are not yet
+        in the mappings.
+
+        Args:
+            settings: The settings object.
 
 
-def retrieve(settings: Settings) -> str:
-    """Retrieve the mappings from cache.
+        Returns:
+            The output of the command.
+        """
+        self._add()
+        self._mappings.save()
 
-    Args:
-        settings: The settings object.
-
-    Returns:
-        the mappings from cache as a string.
-
-    """
-    mappings: Mappings = Mappings(path=settings.mappings)
-    mappings.load()
-
-    return formatter.product(
-        [mappings, mappings.ips, mappings.domains], settings.output
-    )
-
-
-_COMMANDS: dict[Command, Callable[[Settings], str]] = {
-    Command.RESOLVE: resolve,
-    Command.RETRIEVE: retrieve,
-}
+    def refresh(self):
+        """Refresh the mappings by re-resolving a percentage of the stored
+        mappings based on the Settings.part value."""
+        self._mappings.load()
+        subset: Domains = self._mappings.domains.make_random_subset(
+            self._settings.part
+        )
+        self._mappings.update_by_resolving(
+            subset,
+            self._settings.jobs,
+            self._settings.timeout,
+        )
+        self._mappings.save()

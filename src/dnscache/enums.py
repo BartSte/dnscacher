@@ -4,8 +4,10 @@ from enum import Enum
 class Command(Enum):
     """Command: Command to execute."""
 
-    RESOLVE = "resolve"
-    RETRIEVE = "retrieve"
+    ADD = "add"
+    GET = "get"
+    UPDATE = "update"
+    REFRESH = "refresh"
 
 
 class Output(Enum):

@@ -155,26 +155,54 @@ def make_parser() -> Parser:
     commands = parser.add_subparsers(dest="command", required=True)
 
     commands.add_parser(
-        name=Command.RETRIEVE.value,
+        name=Command.GET.value,
         description=_DESCRIPTION_RETRIEVE,
         formatter_class=RawDescriptionHelpFormatter,
         help="Only retrieve the current domain-to-ip mappings stored in cache.",
     )
-    resolve_parser: Parser = commands.add_parser(
-        name=Command.RESOLVE.value,
+    add_command: Parser = commands.add_parser(
+        name=Command.ADD.value,
         description=_DESCRIPTION,
         formatter_class=RawDescriptionHelpFormatter,
         help=(
-            "Resolve the IP addresses of the domains and store the resulting "
-            "domain-to-ip mappings in cache."
+            "Resolve and add the domains from the --source that are not yet in "
+            "the mappings"
         ),
     )
-    resolve_parser.add_argument(
+    add_command.add_argument(
         "source",
         nargs="?",  # nargs=1 is enforced in the Parser.parse_args method
         help=(
             "URL or file path that contains the domains. Will be ignored if "
             "the `--debug` option is set."
+        ),
+    )
+
+    update_command: Parser = commands.add_parser(
+        name=Command.UPDATE.value,
+        description=_DESCRIPTION,
+        formatter_class=RawDescriptionHelpFormatter,
+        help=(
+            "Update the mappings by resolving new domains and removing domains "
+            "that are not in the --source."
+        ),
+    )
+    update_command.add_argument(
+        "source",
+        nargs="?",  # nargs=1 is enforced in the Parser.parse_args method
+        help=(
+            "URL or file path that contains the domains. Will be ignored if "
+            "the `--debug` option is set."
+        ),
+    )
+
+    commands.add_parser(
+        name=Command.REFRESH.value,
+        description=_DESCRIPTION,
+        formatter_class=RawDescriptionHelpFormatter,
+        help=(
+            "Refresh the mappings by re-resolving a percentage of the stored "
+            "mappings based on the --part value."
         ),
     )
 
