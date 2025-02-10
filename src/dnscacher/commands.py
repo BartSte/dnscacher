@@ -6,6 +6,7 @@ from dnscacher import exceptions, formatter, logger
 from dnscacher.domains import Domains
 from dnscacher.ipset import IpSet
 from dnscacher.mappings import Mappings
+from dnscacher.parser import Parser
 from dnscacher.settings import Settings
 
 
@@ -14,7 +15,8 @@ def main():
     sys.excepthook = exceptions.hook
     logger.init()
 
-    settings: Settings = Settings.from_cli()
+    parser: Parser = Parser()
+    settings: Settings = parser.parse_args()
     logger.set(settings.log, settings.loglevel)
     settings.makedirs()
 

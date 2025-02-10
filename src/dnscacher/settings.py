@@ -1,15 +1,14 @@
 import logging
 import os
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 from dataclasses import dataclass
 from ntpath import expandvars
 from os import makedirs
 from os.path import dirname
-from typing import Any, Self
+from typing import Self
 
 from dnscacher.exceptions import SettingsError
 from dnscacher.helpers import is_root
-from dnscacher.parser import make_parser
 
 
 @dataclass
@@ -95,24 +94,6 @@ class Settings:
             logging.debug("Trying to create directory %s", d)
             makedirs(d, exist_ok=True)
 
-    @classmethod
-    def from_cli(cls) -> Self:
-        """Create a new Settings object from the command line arguments.
-
-        Returns:
-            The Settings object.
-
-        """
-        parser: ArgumentParser = make_parser()
-        args: Namespace = parser.parse_args()
-        kwargs: dict[str, Any] = {
-            key: value for key, value in vars(args).items() if value
-        }
-        try:
-            return cls(**kwargs)
-        except TypeError as e:
-            raise SettingsError(f"Invalid settings: {e}") from e
-
     def as_dict(self) -> dict[str, int | str | bool | tuple[str, ...]]:
         """Return the public attributes of the Settings object that are not
         functions or properties.
@@ -126,3 +107,20 @@ class Settings:
             for key, value in self.__annotations__.items()
             if not key.startswith("_")
         }
+
+    @classmethod
+    def from_namespace(cls, namespace: Namespace) -> Self:
+        """Create a Settings object from a namespace.
+
+        Args:
+            namespace: The namespace to create the object from.
+
+        Returns:
+            The Settings object.
+
+        """
+        kwargs = {key: value for key, value in vars(namespace).items() if value}
+        try:
+            return cls(**kwargs)
+        except TypeError as e:
+            raise SettingsError(f"Invalid settings: {e}") from e

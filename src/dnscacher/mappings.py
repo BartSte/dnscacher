@@ -71,7 +71,7 @@ class Mappings(dict[str, list[str]]):
             with open(self.path, "rb") as f:
                 self.update(pickle.load(f))
         except FileNotFoundError:
-            logging.debug("No mappings file found at %s", self.path)
+            logging.info("No mappings file found at %s", self.path)
         except pickle.UnpicklingError as e:
             raise InvalidCacheError(
                 f"Invalid mappings file at {self.path}"
