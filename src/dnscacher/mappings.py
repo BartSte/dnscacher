@@ -12,6 +12,7 @@ import aiodns
 from dnscacher.domains import Domains
 from dnscacher.enums import Output
 from dnscacher.exceptions import InvalidCacheError
+from dnscacher.helpers import StdoutCounter
 from dnscacher.ips import Ips
 
 
@@ -134,12 +135,17 @@ class Mappings(dict[str, list[str]]):
             self._resolve(domain, timeout) for domain in domains
         ]
         logging.info("Resolving %s domains async", len(tasks))
+
+        stdout_counter = StdoutCounter(
+            goal=len(tasks),
+            prefix="Resolving: ",
+            suffix=f" domains with {jobs} workers",
+        )
         for i, future in enumerate(asyncio.as_completed(tasks)):
             domain, ips = await future
             ips = self._filter_ips(ips)
             self[domain] = ips
-            if i % 1000 == 0:
-                logging.info("Resolved %s domains", i)
+            stdout_counter.increment()
         logging.info("Resolved %s domains", len(tasks))
 
     async def _resolve(
