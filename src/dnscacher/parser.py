@@ -45,6 +45,16 @@ class Parser:
     subparsers: dict[Command, ArgumentParser]
 
     def __init__(self):
+        """Initialize the parser with the program arguments and subcommands.
+
+        Note that an additional parser is created to handle the subcommands.
+        This is done because when the subcommands are added to the main parser,
+        is is not straightforward to parse the options and positional arguments
+        intermixed, as is described in the argparse documentation. By creating
+        a second (hidden) parser, we can parse the options and positional
+        arguments separately (and intermixed) and then merge the namespaces of
+        the two parsers into one namespace at the end.
+        """
         kwargs = dict(
             prog="dnscacher",
             description=_DESCRIPTION,
@@ -232,12 +242,12 @@ class Parser:
         """
         parsed, remaining = self.parser.parse_known_args()
 
-        if not parsed.command: # pyright: ignore
+        if not parsed.command:  # pyright: ignore
             raise ArgumentError(
                 None, "the following arguments are required: command"
             )
 
-        subparser = self.subparsers[Command(parsed.command)] # pyright: ignore
+        subparser = self.subparsers[Command(parsed.command)]  # pyright: ignore
         parsed, remaining = subparser.parse_known_args(
             remaining, namespace=parsed
         )
