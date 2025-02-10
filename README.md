@@ -52,16 +52,29 @@ standard output.
 
 ## Installation
 
-1. **Clone or copy this repository**
-2. **Install dependencies**:
+```bash
+pip install dnscacher
+```
 
-   ```bash
-   pip install .
-   ```
+or
 
-   This ensures packages like `asyncio`, `requests`, and others are installed.
+Clone the repository and install it locally:
+
+```bash
+pip install .
+```
 
 ---
+
+If you want to develop the code, you can install the development dependencies
+by running:
+
+```bash
+pip install -e ".[dev]"
+```
+
+This will install the development dependencies together with the package in
+editable mode.
 
 ## Usage
 
