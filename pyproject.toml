@@ -3,7 +3,7 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "dnscache"
+name = "dnscacher"
 authors = [ {name = "BartSte"} ]
 description = "Cache domain to IP mappings"
 readme = "README.md"
@@ -24,14 +24,14 @@ version = "0.0.0"
 dev = ["ipdb", "ipython", "pytest", "build", "twine", "pre-commit"]
 
 [project.scripts]
-dnscache = "dnscache:__main__.main"
+dnscacher = "dnscacher:__main__.main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["dnscache"]
+include = ["dnscacher"]
 
 [tool.pyright]
-include = ["src/dnscache", "tests"]
+include = ["src/dnscacher", "tests"]
 exclude = [
     "**/__pycache__",
     ".git",

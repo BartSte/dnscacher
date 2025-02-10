@@ -3,9 +3,9 @@ from argparse import ArgumentParser
 from os.path import join
 from unittest import TestCase
 
-from dnscache import paths
-from dnscache.parser import make_parser
-from dnscache.settings import Settings
+from dnscacher import paths
+from dnscacher.parser import make_parser
+from dnscacher.settings import Settings
 
 
 class TestParser(TestCase):
@@ -32,7 +32,7 @@ class TestParser(TestCase):
             "--mappings=/tmp/mappings.txt",
             "--ipset=blocked-ips",
             "--part=50",
-            "--log=/tmp/dnscache.log",
+            "--log=/tmp/dnscacher.log",
             "--timeout=5",
             "--output=ips,mappings",
             "--debug",
@@ -61,7 +61,7 @@ class TestParser(TestCase):
             mappings="/tmp/mappings.txt",
             ipset="blocked-ips",
             part=50,
-            log="/tmp/dnscache.log",
+            log="/tmp/dnscacher.log",
             timeout=5,
             output=("ips", "mappings"),
             debug=True,

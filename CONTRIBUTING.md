@@ -1,11 +1,11 @@
-# Contributing to dnscache
+# Contributing to dnscacher
 
-Thank you for considering contributing to the `dnscache` project! We welcome contributions from everyone.
+Thank you for considering contributing to the `dnscacher` project! We welcome contributions from everyone.
 
 ## Getting Started
 
 1. Fork the repository on GitHub.
-2. Clone your forked repository (`git clone https://github.com/BartSte/dnscache.git`).
+2. Clone your forked repository (`git clone https://github.com/BartSte/dnscacher.git`).
 3. Create a new branch (`git checkout -b my_branch_name`).
 4. Make your changes.
 5. Commit your changes (`git commit -am "Add some feature"`).
@@ -20,7 +20,7 @@ Please note that this project is released with a Contributor Code of Conduct. By
 
 If you encounter any bugs or issues, please report them on the issue tracker at:
 
-[Issues](https://github.com/BartSte/dnscache/issues)
+[Issues](https://github.com/BartSte/dnscacher/issues)
 
 ## License
 

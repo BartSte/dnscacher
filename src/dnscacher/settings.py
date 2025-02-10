@@ -7,9 +7,9 @@ from os import makedirs
 from os.path import dirname
 from typing import Any, Self
 
-from dnscache.exceptions import SettingsError
-from dnscache.helpers import is_root
-from dnscache.parser import make_parser
+from dnscacher.exceptions import SettingsError
+from dnscacher.helpers import is_root
+from dnscacher.parser import make_parser
 
 
 @dataclass
@@ -32,7 +32,7 @@ class Settings:
 
     command: str = ""
     debug: bool = False
-    ipset: str = "dnscache"
+    ipset: str = "dnscacher"
     jobs: int = 10000
     log: str = ""
     loglevel: str = "INFO"
@@ -42,13 +42,13 @@ class Settings:
     source: str = ""
     timeout: int = 10
 
-    _log_root_unix: str = "/var/log/dnscache.log"
-    _log_unix: str = "$HOME/.local/state/dnscache.log"
-    _log_win: str = "$TEMP\\dnscache\\dnscache.log"
+    _log_root_unix: str = "/var/log/dnscacher.log"
+    _log_unix: str = "$HOME/.local/state/dnscacher.log"
+    _log_win: str = "$TEMP\\dnscacher\\dnscacher.log"
 
-    _mappings_root_unix: str = "/var/cache/dnscache/mappings.pickle"
-    _mappings_unix: str = "$HOME/.cache/dnscache/mappings.pickle"
-    _mappings_win: str = "$TEMP\\dnscache\\mappings.pickle"
+    _mappings_root_unix: str = "/var/cache/dnscacher/mappings.pickle"
+    _mappings_unix: str = "$HOME/.cache/dnscacher/mappings.pickle"
+    _mappings_win: str = "$TEMP\\dnscacher\\mappings.pickle"
 
     def __post_init__(self):
         """Set the default values for the settings."""

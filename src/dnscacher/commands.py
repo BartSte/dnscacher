@@ -2,11 +2,11 @@ import logging
 import sys
 from typing import Callable
 
-from dnscache import exceptions, formatter, logger
-from dnscache.domains import Domains
-from dnscache.ipset import IpSet
-from dnscache.mappings import Mappings
-from dnscache.settings import Settings
+from dnscacher import exceptions, formatter, logger
+from dnscacher.domains import Domains
+from dnscacher.ipset import IpSet
+from dnscacher.mappings import Mappings
+from dnscacher.settings import Settings
 
 
 def main():

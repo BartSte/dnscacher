@@ -1,8 +1,8 @@
 import re
 import textwrap
 
-from dnscache import formatter
-from dnscache.enums import Output
+from dnscacher import formatter
+from dnscacher.enums import Output
 from tests.cases import ProjectTestCase
 
 

@@ -1,8 +1,8 @@
 from typing import override
 from unittest import TestCase
 
-from dnscache.mappings import Mappings
-from dnscache.settings import Settings
+from dnscacher.mappings import Mappings
+from dnscacher.settings import Settings
 
 
 class ProjectTestCase(TestCase):

@@ -8,8 +8,8 @@ from argparse import (
 from os.path import join
 from typing import override
 
-from dnscache import paths
-from dnscache.enums import Command, Output
+from dnscacher import paths
+from dnscacher.enums import Command, Output
 
 _DESCRIPTION = """
 Resolve the IP addresses of the `source` domains and store the domain to IP
@@ -94,7 +94,7 @@ def _check_part(value: int | str) -> int:
 def make_parser() -> Parser:
     """Initialize the parser with program arguments."""
     parser = Parser(
-        prog="dnscache",
+        prog="dnscacher",
         description=_DESCRIPTION,
         formatter_class=RawDescriptionHelpFormatter,
     )

@@ -1,4 +1,4 @@
-from dnscache.commands import main
+from dnscacher.commands import main
 
 if __name__ == "__main__":
     main()

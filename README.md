@@ -1,6 +1,6 @@
-# DNSCache
+# DNSCacher
 
-**DNSCache** is a command-line utility that helps you manage domain-to-IP
+**DNSCacher** is a command-line utility that helps you manage domain-to-IP
 mappings efficiently. It supports caching results in a local file, updating
 those results on demand, removing stale entries, and refreshing entries in
 user-defined parts of the cache. Additionally, it can produce various output
@@ -65,10 +65,10 @@ standard output.
 
 ## Usage
 
-Run the `dnscache` command with one of the subcommands:
+Run the `dnscacher` command with one of the subcommands:
 
 ```bash
-dnscache [OPTIONS] {get|add|update|refresh} [SOURCE]
+dnscacher [OPTIONS] {get|add|update|refresh} [SOURCE]
 ```
 
 - The `SOURCE` is either a local file or a URL and is not needed for the `get`
@@ -90,7 +90,7 @@ described in [Options](#options).
 
 ### GET
 
-**Command:** `dnscache get`
+**Command:** `dnscacher get`
 
 - **Description:**  
   Retrieves the current domain-to-IP mappings from the cache and (optionally)
@@ -103,7 +103,7 @@ described in [Options](#options).
 
 ### ADD
 
-**Command:** `dnscache add [SOURCE]`
+**Command:** `dnscacher add [SOURCE]`
 
 - **Description:**  
   Resolves and **adds** any domains not already in the cache.  
@@ -117,7 +117,7 @@ described in [Options](#options).
 
 ### UPDATE
 
-**Command:** `dnscache update [SOURCE]`
+**Command:** `dnscacher update [SOURCE]`
 
 - **Description:**  
   Combines adding new domains and removing stale domains in one step.
@@ -130,7 +130,7 @@ described in [Options](#options).
 
 ### REFRESH
 
-**Command:** `dnscache refresh`
+**Command:** `dnscacher refresh`
 
 - **Description:**  
   Re-resolves a random set (size is given by `--part`) of **already cached**
@@ -146,7 +146,7 @@ described in [Options](#options).
 
 ## Options
 
-To get get information on the options run the `dnscache --help` command.
+To get get information on the options run the `dnscacher --help` command.
 
 #### Source Argument
 
@@ -173,7 +173,7 @@ Use `-o/--output` with one or more comma-separated values:
 If you provide multiple outputs, separate them with commas:
 
 ```bash
-dnscache --output mappings,ipset get
+dnscacher --output mappings,ipset get
 ```
 
 That will print the mappings block, then the ipset block.
@@ -185,7 +185,7 @@ That will print the mappings block, then the ipset block.
 ### 1. Add a List of Domains from a URL
 
 ```bash
-dnscache add https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/porn-only/hosts
+dnscacher add https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/porn-only/hosts
 ```
 
 - Resolves all new domains found in that URL and appends them to the cache.
@@ -193,15 +193,15 @@ dnscache add https://raw.githubusercontent.com/StevenBlack/hosts/master/alternat
 ### 2. Get the Current Mappings in `ipset` Format
 
 ```bash
-dnscache --output ipset get
+dnscacher --output ipset get
 ```
 
-- Prints lines of the form `add dnscache 93.184.216.34`.
+- Prints lines of the form `add dnscacher 93.184.216.34`.
 
 ### 3. Update Cache from a Local File
 
 ```bash
-dnscache update /path/to/domains.txt
+dnscacher update /path/to/domains.txt
 ```
 
 - Adds any new domains from `domains.txt` and removes any that no longer appear
@@ -210,7 +210,7 @@ dnscache update /path/to/domains.txt
 ### 4. Refresh 50% of Cached Domains
 
 ```bash
-dnscache --part 50 refresh
+dnscacher --part 50 refresh
 ```
 
 - Randomly picks 50% of the cached domains and re-resolves them, updating the

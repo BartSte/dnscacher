@@ -3,8 +3,8 @@ from unittest import TestCase
 
 import requests
 
-from dnscache import paths
-from dnscache.domains import Domains
+from dnscacher import paths
+from dnscacher.domains import Domains
 
 
 class TestDomains(TestCase):

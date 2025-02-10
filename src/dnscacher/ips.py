@@ -1,6 +1,6 @@
 from typing import override
 
-from dnscache.enums import Output
+from dnscacher.enums import Output
 
 
 class Ips(set[str]):

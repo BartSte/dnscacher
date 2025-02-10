@@ -3,9 +3,9 @@ from contextlib import suppress
 from os import remove
 from unittest import TestCase
 
-from dnscache.domains import Domains
-from dnscache.mappings import InvalidCacheError, Mappings
-from dnscache.settings import Settings
+from dnscacher.domains import Domains
+from dnscacher.mappings import InvalidCacheError, Mappings
+from dnscacher.settings import Settings
 
 
 class TestMappings(TestCase):

@@ -1,7 +1,7 @@
 from os.path import dirname
 from unittest import TestCase
 
-from dnscache.settings import Settings
+from dnscacher.settings import Settings
 
 
 class TestSettings(TestCase):

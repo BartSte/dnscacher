@@ -9,10 +9,10 @@ from typing import override
 
 import aiodns
 
-from dnscache.domains import Domains
-from dnscache.enums import Output
-from dnscache.exceptions import InvalidCacheError
-from dnscache.ips import Ips
+from dnscacher.domains import Domains
+from dnscacher.enums import Output
+from dnscacher.exceptions import InvalidCacheError
+from dnscacher.ips import Ips
 
 
 class Mappings(dict[str, list[str]]):

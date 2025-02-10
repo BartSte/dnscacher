@@ -6,7 +6,7 @@ from typing import Self, override
 
 import requests
 
-from dnscache.enums import Output
+from dnscacher.enums import Output
 
 
 class Domains(set[str]):
