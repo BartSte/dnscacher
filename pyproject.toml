@@ -17,6 +17,7 @@ dependencies = [
     "asyncio",
     "aiodns",
     "requests",
+    "pygeneral"
 ]
 version = "0.1.0"
 

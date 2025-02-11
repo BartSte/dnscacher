@@ -7,8 +7,9 @@ from os import makedirs
 from os.path import dirname
 from typing import Self
 
+from pygeneral.permission import is_root
+
 from dnscacher.exceptions import SettingsError
-from dnscacher.helpers import is_root
 
 
 @dataclass

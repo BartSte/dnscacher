@@ -8,11 +8,11 @@ from os.path import dirname
 from typing import override
 
 import aiodns
+from pygeneral.print import StdoutCounter
 
 from dnscacher.domains import Domains
 from dnscacher.enums import Output
 from dnscacher.exceptions import InvalidCacheError
-from dnscacher.helpers import StdoutCounter
 from dnscacher.ips import Ips
 
 
