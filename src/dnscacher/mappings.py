@@ -1,19 +1,15 @@
 import asyncio
 import logging
 import pickle
-import socket
-from collections.abc import Coroutine
 from os import makedirs
 from os.path import dirname
 from typing import override
-
-import aiodns
-from pygeneral.print import StdoutCounter
 
 from dnscacher.domains import Domains
 from dnscacher.enums import Output
 from dnscacher.exceptions import InvalidCacheError
 from dnscacher.ips import Ips
+from dnscacher.resolve import Resolver
 
 
 class Mappings(dict[str, list[str]]):
@@ -26,8 +22,6 @@ class Mappings(dict[str, list[str]]):
     """
 
     path: str
-    _sem: asyncio.Semaphore
-    _resolver: aiodns.DNSResolver
 
     EXCLUDED_IPS: set[str] = {"0.0.0.0", "127.0.0.1"}
 
@@ -114,78 +108,10 @@ class Mappings(dict[str, list[str]]):
             Defaults to 5.
 
         """
-        logging.debug("Asyncio event loop starting with %s workers", jobs)
-        asyncio.run(self._resolve_multiple(domains, jobs, timeout))
-        logging.debug("Asyncio event loop finished")
-
-    async def _resolve_multiple(
-        self, domains: Domains, jobs: int = 10000, timeout: int = 5
-    ):
-        """Resolve multiple domains concurrently.
-
-        Args:
-            domains (Domains): Set of domains to resolve.
-            jobs (int, optional): Maximum number of concurrent resolutions.
-            timeout (int, optional): Timeout for each resolution.
-
-        """
-        self._sem = asyncio.Semaphore(jobs)
-        self._resolver = aiodns.DNSResolver()
-        tasks: list[Coroutine[None, None, tuple[str, list[str]]]] = [
-            self._resolve(domain, timeout) for domain in domains
-        ]
-        logging.info("Resolving %s domains async", len(tasks))
-
-        stdout_counter = StdoutCounter(
-            goal=len(tasks),
-            prefix="Resolving: ",
-            suffix=f" domains with {jobs} workers",
+        resolver = Resolver(
+            jobs=jobs, timeout=timeout, excluded=self.EXCLUDED_IPS
         )
-        for i, future in enumerate(asyncio.as_completed(tasks)):
-            domain, ips = await future
-            ips = self._filter_ips(ips)
-            self[domain] = ips
-            stdout_counter.increment()
-        logging.info("Resolved %s domains", len(tasks))
-
-    async def _resolve(
-        self, domain: str, timeout: int = 5
-    ) -> tuple[str, list[str]]:
-        """Asynchronously resolve a single domain to its IPv4 addresses.
-
-        Args:
-            domain (str): The domain to resolve.
-            timeout (int, optional): Timeout for the resolution. Defaults to 5.
-
-        Returns:
-            A tuple containing the domain and a list of resolved IPs.
-
-        """
-        async with self._sem:
-            try:
-                result = await asyncio.wait_for(
-                    self._resolver.gethostbyname(domain, socket.AF_INET),
-                    timeout=timeout,
-                )
-                return domain, result.addresses
-            except asyncio.TimeoutError:
-                logging.debug("Timeout resolving %s", domain)
-                return domain, []
-            except aiodns.error.DNSError as e:
-                logging.debug("Error resolving %s: %s", domain, e.args[1])
-                return domain, []
-
-    def _filter_ips(self, ips: list[str]) -> list[str]:
-        """Filter out IPs that are in Mappings.EXCLUDED_IPS.
-
-        Args:
-            ips (list[str]): List of IP addresses.
-
-        Returns:
-            list[str]: List of filtered IP addresses.
-
-        """
-        return [ip for ip in ips if ip not in self.EXCLUDED_IPS]
+        asyncio.run(resolver.fetch_ips(domains=domains, mappings=self))
 
     @override
     def __format__(self, format_spec: str) -> str:
