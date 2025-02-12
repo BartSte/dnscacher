@@ -108,6 +108,9 @@ class Mappings(dict[str, list[str]]):
             Defaults to 5.
 
         """
+        if len(domains) == 0:
+            return
+
         resolver = Resolver(
             jobs=jobs, timeout=timeout, excluded=self.EXCLUDED_IPS
         )
