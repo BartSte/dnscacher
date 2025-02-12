@@ -93,6 +93,12 @@ class Parser:
             ),
         )
         parser.add_argument(
+            "-q",
+            "--quiet",
+            action="store_true",
+            help="Only log to file and not to stderr.",
+        )
+        parser.add_argument(
             "-i",
             "--ipset",
             help="Name of the ipset to add the IPs to.",

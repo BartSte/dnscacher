@@ -15,9 +15,11 @@ def main():
     sys.excepthook = exceptions.hook
     logger.init()
 
-    parser: Parser = Parser()
-    settings: Settings = parser.parse_args()
+    settings: Settings = Parser().parse_args()
+
+    logger.set_quiet(settings.quiet)
     logger.set(settings.log, settings.loglevel)
+
     settings.makedirs()
 
     print(Commands.run(settings))

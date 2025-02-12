@@ -26,6 +26,7 @@ class Settings:
         loglevel (str): Logging level.
         mappings (str): File path for domain→IP mappings.
         part (int): Percentage (0-100) of stored mappings to re-resolve.
+        quiet (bool): Suppress output to stderr.
         timeout (int): Timeout in seconds for resolving a domain.
 
     """
@@ -41,6 +42,7 @@ class Settings:
     part: int = 100
     source: str = ""
     timeout: int = 10
+    quiet: bool = False
 
     _log_root_unix: str = "/var/log/dnscacher.log"
     _log_unix: str = "$HOME/.local/state/dnscacher.log"

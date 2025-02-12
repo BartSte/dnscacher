@@ -1,5 +1,8 @@
 import logging
+import sys
 from logging.handlers import RotatingFileHandler
+
+_stderr_write = sys.stderr.write
 
 
 def init():
@@ -37,3 +40,16 @@ def set(logfile: str, level: str):
     logger.setLevel(level)
     logger.addHandler(file)
     logging.info("--- New run ---")
+
+
+def set_quiet(quiet: bool):
+    """Suppress output to stderr.
+
+    Args:
+        quiet (bool): Suppress output to stderr.
+
+    """
+    if quiet:
+        sys.stderr.write = lambda *args, **kwargs: None  # pyright: ignore
+    else:
+        sys.stderr.write = _stderr_write

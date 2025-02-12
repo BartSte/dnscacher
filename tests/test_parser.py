@@ -37,6 +37,7 @@ class TestParser(TestCase):
             "--log=/tmp/dnscacher.log",
             "--timeout=5",
             "--output=ips,mappings",
+            "--quiet",
             "--debug",
         ]
 
@@ -65,6 +66,7 @@ class TestParser(TestCase):
             timeout=5,
             output=("ips", "mappings"),
             debug=True,
+            quiet=True,
             source=join(paths.root, "debug.txt"),
         )
         for key in expected.as_dict():
