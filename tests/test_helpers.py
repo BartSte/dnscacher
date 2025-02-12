@@ -3,11 +3,11 @@ from typing import override
 from unittest import TestCase
 from unittest.mock import patch
 
-from pygeneral.print import StdoutCounter
+from pygeneral.print import Counter
 
 
-class TestStdoutCounter(TestCase):
-    """Test case for StdoutCounter.
+class TestCounter(TestCase):
+    """Test case for Counter.
 
     Attributes:
         cnt: the current count.
@@ -26,14 +26,14 @@ class TestStdoutCounter(TestCase):
 
         patched_write.side_effect = assert_write
 
-        counter = StdoutCounter(goal=10)
+        counter = Counter(goal=10)
         for i in range(10):
             self.cnt += 1
             counter.increment()
 
 
 if __name__ == "__main__":
-    counter = StdoutCounter(goal=10, prefix="Counting: ", suffix=" seconds")
+    counter = Counter(goal=10, prefix="Counting: ", suffix=" seconds")
     for i in range(10):
         counter.increment()
         sleep(1)
