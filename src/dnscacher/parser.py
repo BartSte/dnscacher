@@ -9,7 +9,7 @@ from os.path import join
 from typing import override
 
 from dnscacher import paths
-from dnscacher.enums import Command
+from dnscacher.enums import Command, Output
 from dnscacher.settings import Settings
 
 _DESCRIPTION = """
@@ -89,7 +89,7 @@ class Parser:
             action=_TupleAction,
             help=(
                 "Write the obtained data to stdout. Separate multiple outputs "
-                "by a comma. Choices: {', '.join(x.value for x in Output)}"
+                f"by a comma. Choices: {', '.join(x.value for x in Output)}"
             ),
         )
         parser.add_argument(
